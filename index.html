@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>E3 TUNER</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --panel: #0d1318;
+    --border: #1a2530;
+    --accent: #00e5ff;
+    --accent2: #ff6b00;
+    --accent3: #00ff88;
+    --danger: #ff2d55;
+    --warn: #ffcc00;
+    --text: #c8d8e8;
+    --dim: #4a6070;
+    --glow: 0 0 20px rgba(0,229,255,0.4);
+    --glow2: 0 0 20px rgba(255,107,0,0.4);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grid background */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .app { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:0 0 100px; }
+
+  /* HEADER */
+  .header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 20px 20px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-size: 28px; font-weight: 700; letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: var(--glow);
+  }
+  .logo span { color: var(--accent2); }
+  .version { font-family:'Share Tech Mono'; font-size:11px; color:var(--dim); }
+
+  /* STATUS BAR */
+  .status-bar {
+    display:flex; gap:8px; padding:10px 20px;
+    font-family:'Share Tech Mono'; font-size:11px;
+  }
+  .status-dot {
+    display:flex; align-items:center; gap:5px; color:var(--dim);
+  }
+  .dot {
+    width:7px; height:7px; border-radius:50%; background:var(--dim);
+    animation: none;
+  }
+  .dot.connected { background:var(--accent3); box-shadow:0 0 8px var(--accent3); animation: pulse 2s infinite; }
+  .dot.scanning { background:var(--warn); box-shadow:0 0 8px var(--warn); animation: pulse 0.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* CONNECT SECTION */
+  .connect-section {
+    margin:20px; padding:24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius:12px;
+    position:relative; overflow:hidden;
+  }
+  .connect-section::before {
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .section-title {
+    font-size:13px; font-weight:600; letter-spacing:3px;
+    color:var(--dim); text-transform:uppercase; margin-bottom:16px;
+    font-family:'Share Tech Mono';
+  }
+
+  .btn {
+    width:100%; padding:14px 20px;
+    border:none; border-radius:8px; cursor:pointer;
+    font-family:'Rajdhani'; font-size:17px; font-weight:700;
+    letter-spacing:2px; text-transform:uppercase;
+    transition: all 0.2s; position:relative; overflow:hidden;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #00b8cc, #0090a8);
+    color:#000;
+    box-shadow: 0 4px 20px rgba(0,229,255,0.3);
+  }
+  .btn-primary:active { transform:scale(0.97); }
+  .btn-primary:hover { box-shadow: 0 4px 30px rgba(0,229,255,0.5); }
+  .btn-primary:disabled { background:#1a2530; color:var(--dim); box-shadow:none; cursor:not-allowed; }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #cc002a, #990020);
+    color:#fff;
+    box-shadow: 0 4px 20px rgba(255,45,85,0.3);
+  }
+  .btn-danger:active { transform:scale(0.97); }
+
+  .btn-warn {
+    background: linear-gradient(135deg, #cc9900, #aa7700);
+    color:#000;
+    box-shadow: 0 4px 20px rgba(255,204,0,0.3);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #00cc66, #009944);
+    color:#000;
+    box-shadow: 0 4px 20px rgba(0,255,136,0.3);
+  }
+
+  .btn-sm {
+    padding:10px 16px; font-size:14px; width:auto;
+  }
+
+  .device-info {
+    display:none;
+    background: rgba(0,229,255,0.05);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius:8px; padding:12px; margin-top:12px;
+    font-family:'Share Tech Mono'; font-size:12px;
+  }
+  .device-info.visible { display:block; }
+  .device-row { display:flex; justify-content:space-between; padding:3px 0; }
+  .device-row span:first-child { color:var(--dim); }
+  .device-row span:last-child { color:var(--accent); }
+
+  /* LIVE DASHBOARD */
+  .dashboard {
+    margin:0 20px 16px;
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .metric {
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:16px 14px;
+    position:relative; overflow:hidden;
+  }
+  .metric::after {
+    content:''; position:absolute; bottom:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--accent-col, var(--accent)), transparent);
+    opacity:0.5;
+  }
+  .metric.wide { grid-column:1/-1; }
+  .metric-label {
+    font-size:11px; letter-spacing:2px; color:var(--dim);
+    font-family:'Share Tech Mono'; margin-bottom:6px;
+  }
+  .metric-value {
+    font-family:'Share Tech Mono'; font-size:32px;
+    color:var(--accent); line-height:1;
+    text-shadow: var(--glow);
+  }
+  .metric-unit { font-size:13px; color:var(--dim); margin-left:4px; }
+  .metric-bar {
+    height:4px; background:var(--border); border-radius:2px; margin-top:8px; overflow:hidden;
+  }
+  .metric-bar-fill {
+    height:100%; border-radius:2px; transition:width 0.5s ease;
+    background:var(--accent);
+  }
+  .metric.warn .metric-value { color:var(--warn); text-shadow:0 0 15px rgba(255,204,0,0.5); }
+  .metric.warn .metric-bar-fill { background:var(--warn); }
+  .metric.ok .metric-value { color:var(--accent3); text-shadow:0 0 15px rgba(0,255,136,0.5); }
+
+  /* BIG SPEED DISPLAY */
+  .speed-ring-container {
+    margin: 0 20px 16px;
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:12px; padding:20px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .speed-ring {
+    position:relative; width:200px; height:200px;
+  }
+  .speed-svg { width:200px; height:200px; transform:rotate(-135deg); }
+  .speed-track { fill:none; stroke:var(--border); stroke-width:12; }
+  .speed-fill {
+    fill:none; stroke:var(--accent); stroke-width:12;
+    stroke-linecap:round;
+    stroke-dasharray: 440;
+    stroke-dashoffset: 440;
+    transition: stroke-dashoffset 0.5s ease, stroke 0.3s;
+    filter: drop-shadow(0 0 8px var(--accent));
+  }
+  .speed-center {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    text-align:center;
+  }
+  .speed-num {
+    font-family:'Share Tech Mono'; font-size:52px; line-height:1;
+    color:var(--accent); text-shadow:var(--glow);
+  }
+  .speed-unit { font-size:13px; color:var(--dim); letter-spacing:2px; }
+  .speed-max { font-size:11px; color:var(--dim); margin-top:4px; font-family:'Share Tech Mono'; }
+
+  /* TUNING SECTION */
+  .tuning-section { margin:0 20px 16px; }
+
+  .mode-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;
+  }
+  .mode-btn {
+    padding:16px 12px; border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--panel); color:var(--text);
+    font-family:'Rajdhani'; font-size:15px; font-weight:600;
+    letter-spacing:1px; cursor:pointer; text-align:center;
+    transition:all 0.2s;
+  }
+  .mode-btn .mode-icon { font-size:24px; display:block; margin-bottom:4px; }
+  .mode-btn.active {
+    border-color:var(--accent); color:var(--accent);
+    background:rgba(0,229,255,0.08);
+    box-shadow:inset 0 0 20px rgba(0,229,255,0.1);
+  }
+  .mode-btn.active.police {
+    border-color:var(--danger); color:var(--danger);
+    background:rgba(255,45,85,0.08);
+    box-shadow:inset 0 0 20px rgba(255,45,85,0.1);
+    animation: policeFlash 1s infinite;
+  }
+  @keyframes policeFlash { 0%,100%{border-color:var(--danger)} 50%{border-color:#0055ff} }
+
+  /* SPEED SLIDER */
+  .speed-slider-wrap {
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:20px;
+  }
+  .slider-header {
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;
+  }
+  .slider-label { font-size:13px; letter-spacing:2px; color:var(--dim); font-family:'Share Tech Mono'; }
+  .slider-val {
+    font-family:'Share Tech Mono'; font-size:28px; color:var(--accent2);
+    text-shadow:var(--glow2);
+  }
+
+  input[type=range] {
+    -webkit-appearance:none; width:100%; height:6px;
+    background: linear-gradient(90deg, var(--accent2) var(--pct, 50%), var(--border) var(--pct, 50%));
+    border-radius:3px; outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:24px; height:24px;
+    background:var(--accent2); border-radius:50%;
+    box-shadow:0 0 10px rgba(255,107,0,0.6);
+    cursor:pointer;
+  }
+
+  .speed-presets { display:flex; gap:8px; margin-top:12px; }
+  .preset-btn {
+    flex:1; padding:8px 4px; border-radius:6px;
+    border:1px solid var(--border); background:transparent;
+    color:var(--dim); font-family:'Share Tech Mono'; font-size:12px;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .preset-btn:hover, .preset-btn.active {
+    border-color:var(--accent2); color:var(--accent2);
+    background:rgba(255,107,0,0.08);
+  }
+
+  /* APPLY BTN */
+  .apply-wrap { padding:0 20px; margin-bottom:16px; display:flex; gap:10px; }
+
+  /* ZERO START */
+  .zero-start-wrap {
+    margin:0 20px 16px;
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:20px;
+  }
+  .toggle-row {
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .toggle-info { flex:1; }
+  .toggle-title { font-size:17px; font-weight:600; color:var(--text); }
+  .toggle-desc { font-size:12px; color:var(--dim); margin-top:2px; font-family:'Share Tech Mono'; }
+
+  .toggle {
+    position:relative; width:56px; height:30px; flex-shrink:0; margin-left:16px;
+  }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider {
+    position:absolute; inset:0;
+    background:var(--border); border-radius:15px; cursor:pointer;
+    transition:0.3s;
+  }
+  .toggle-slider::before {
+    content:''; position:absolute;
+    width:22px; height:22px; left:4px; top:4px;
+    background:#4a6070; border-radius:50%;
+    transition:0.3s;
+  }
+  .toggle input:checked + .toggle-slider { background:rgba(0,255,136,0.3); }
+  .toggle input:checked + .toggle-slider::before {
+    transform:translateX(26px); background:var(--accent3);
+    box-shadow:0 0 10px rgba(0,255,136,0.6);
+  }
+
+  /* LOG */
+  .log-section { margin:0 20px 16px; }
+  .log-box {
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:14px;
+    font-family:'Share Tech Mono'; font-size:11px;
+    max-height:150px; overflow-y:auto;
+    color:var(--dim);
+  }
+  .log-entry { padding:2px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+  .log-entry.ok { color:var(--accent3); }
+  .log-entry.warn { color:var(--warn); }
+  .log-entry.err { color:var(--danger); }
+  .log-entry.info { color:var(--accent); }
+
+  /* TABS */
+  .tab-bar {
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px;
+    background:rgba(8,12,16,0.95);
+    backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);
+    display:flex; z-index:100;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .tab {
+    flex:1; padding:12px 8px; text-align:center; cursor:pointer;
+    color:var(--dim); font-size:10px; letter-spacing:1px;
+    text-transform:uppercase; font-family:'Share Tech Mono';
+    transition:color 0.2s;
+  }
+  .tab-icon { font-size:20px; display:block; margin-bottom:2px; }
+  .tab.active { color:var(--accent); }
+
+  /* PAGES */
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* TOAST */
+  .toast {
+    position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px);
+    background:var(--panel); border:1px solid var(--accent);
+    color:var(--accent); padding:12px 24px; border-radius:8px;
+    font-family:'Share Tech Mono'; font-size:13px;
+    transition:transform 0.3s; z-index:999;
+    box-shadow:0 4px 20px rgba(0,229,255,0.3);
+    white-space:nowrap;
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast.err { border-color:var(--danger); color:var(--danger); box-shadow:0 4px 20px rgba(255,45,85,0.3); }
+  .toast.ok { border-color:var(--accent3); color:var(--accent3); box-shadow:0 4px 20px rgba(0,255,136,0.3); }
+
+  /* WARNING BANNER */
+  .warning-banner {
+    margin:10px 20px 0;
+    background:rgba(255,204,0,0.05);
+    border:1px solid rgba(255,204,0,0.3);
+    border-radius:8px; padding:10px 14px;
+    font-size:12px; color:var(--warn);
+    font-family:'Share Tech Mono';
+    line-height:1.5;
+  }
+
+  /* SCANNING animation */
+  .scanning-ring {
+    width:60px; height:60px; margin:16px auto;
+    border:3px solid var(--border);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    display:none;
+  }
+  .scanning-ring.active { display:block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* BLE not supported warning */
+  .ble-warn {
+    margin:16px 20px;
+    background:rgba(255,45,85,0.08);
+    border:1px solid rgba(255,45,85,0.3);
+    border-radius:10px; padding:16px;
+    font-family:'Share Tech Mono'; font-size:12px;
+    color:var(--danger); line-height:1.8; display:none;
+  }
+
+  .divider { height:1px; background:var(--border); margin:8px 20px; }
+
+  .raw-cmd {
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:16px; margin:0 20px 16px;
+  }
+  .cmd-row { display:flex; gap:8px; margin-bottom:10px; }
+  .cmd-input {
+    flex:1; background:var(--bg); border:1px solid var(--border);
+    border-radius:6px; padding:10px 12px; color:var(--accent);
+    font-family:'Share Tech Mono'; font-size:13px; outline:none;
+  }
+  .cmd-input:focus { border-color:var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="logo">E3<span>TUNE</span></div>
+      <div class="version">NINEBOT E3 // v2.0</div>
+    </div>
+    <div style="text-align:right">
+      <div class="status-bar" style="padding:0; justify-content:flex-end">
+        <div class="status-dot">
+          <div class="dot" id="btDot"></div>
+          <span id="btStatus" style="font-family:'Share Tech Mono';font-size:11px;color:var(--dim)">OFFLINE</span>
+        </div>
+      </div>
+      <div id="batteryDisplay" style="font-family:'Share Tech Mono';font-size:11px;color:var(--dim);margin-top:3px">🔋 ---%</div>
+    </div>
+  </div>
+
+  <div class="warning-banner" id="bleWarnBanner" style="display:none">
+    ⚠ Web Bluetooth nicht unterstützt.<br>
+    Öffne diese Seite in <strong>Chrome für Android</strong>.<br>
+    chrome://flags → #enable-web-bluetooth → Enabled
+  </div>
+
+  <!-- PAGE: CONNECT -->
+  <div class="page active" id="page-connect">
+
+    <div style="height:14px"></div>
+
+    <div class="connect-section">
+      <div class="section-title">Bluetooth Verbindung</div>
+
+      <div class="scanning-ring" id="scanningRing"></div>
+
+      <button class="btn btn-primary" id="connectBtn" onclick="connectScooter()">
+        ⚡ MIT E3 VERBINDEN
+      </button>
+
+      <div class="device-info" id="deviceInfo">
+        <div class="device-row"><span>GERÄT</span><span id="devName">---</span></div>
+        <div class="device-row"><span>UUID</span><span id="devId">---</span></div>
+        <div class="device-row"><span>STATUS</span><span id="devStatus" style="color:var(--accent3)">VERBUNDEN</span></div>
+        <div class="device-row"><span>FIRMWARE</span><span id="devFw">---</span></div>
+      </div>
+
+      <button class="btn btn-danger" id="disconnectBtn" style="display:none;margin-top:10px" onclick="disconnectScooter()">
+        TRENNEN
+      </button>
+    </div>
+
+    <div class="warning-banner">
+      ⚠ NUR AUF PRIVATGELÄNDE VERWENDEN<br>
+      Tuning auf öffentlichen Straßen ist illegal (StVZO §21a).<br>
+      Du bist selbst verantwortlich für den Einsatz.
+    </div>
+
+    <div style="height:14px"></div>
+    <div class="log-section">
+      <div class="section-title">SYSTEM LOG</div>
+      <div class="log-box" id="logBox">
+        <div class="log-entry info">[BOOT] E3TUNE initialisiert</div>
+        <div class="log-entry">[SYS] Warte auf Bluetooth...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: LIVE -->
+  <div class="page" id="page-live">
+    <div style="height:14px"></div>
+
+    <div class="speed-ring-container">
+      <div class="section-title" style="align-self:flex-start">LIVE GESCHWINDIGKEIT</div>
+      <div class="speed-ring">
+        <svg class="speed-svg" viewBox="0 0 160 160">
+          <circle class="speed-track" cx="80" cy="80" r="70"/>
+          <circle class="speed-fill" id="speedFill" cx="80" cy="80" r="70"/>
+        </svg>
+        <div class="speed-center">
+          <div class="speed-num" id="speedVal">0</div>
+          <div class="speed-unit">KM/H</div>
+        </div>
+      </div>
+      <div class="speed-max" id="speedMaxLabel">MAX: 20 KM/H</div>
+    </div>
+
+    <div class="dashboard">
+      <div class="metric" id="wattMetric">
+        <div class="metric-label">LEISTUNG</div>
+        <div class="metric-value" id="wattVal">0<span class="metric-unit">W</span></div>
+        <div class="metric-bar"><div class="metric-bar-fill" id="wattBar" style="width:0%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="metric" id="voltMetric">
+        <div class="metric-label">SPANNUNG</div>
+        <div class="metric-value" id="voltVal">36.0<span class="metric-unit">V</span></div>
+        <div class="metric-bar"><div class="metric-bar-fill" id="voltBar" style="width:90%"></div></div>
+      </div>
+      <div class="metric" id="ampMetric">
+        <div class="metric-label">STROMSTÄRKE</div>
+        <div class="metric-value" id="ampVal">0.0<span class="metric-unit">A</span></div>
+        <div class="metric-bar"><div class="metric-bar-fill" id="ampBar" style="width:0%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="metric" id="tempMetric">
+        <div class="metric-label">MOTOR TEMP</div>
+        <div class="metric-value" id="tempVal">25<span class="metric-unit">°C</span></div>
+        <div class="metric-bar"><div class="metric-bar-fill" id="tempBar" style="width:15%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="metric wide">
+        <div class="metric-label">AKKUSTAND</div>
+        <div class="metric-value" id="battVal">100<span class="metric-unit">%</span></div>
+        <div class="metric-bar"><div class="metric-bar-fill" id="battBar" style="width:100%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">ODO</div>
+        <div class="metric-value" id="odoVal">0<span class="metric-unit" style="font-size:11px">km</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">FEHLERCODE</div>
+        <div class="metric-value" id="errVal" style="font-size:20px;color:var(--accent3)">NONE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: TUNING -->
+  <div class="page" id="page-tune">
+    <div style="height:14px"></div>
+
+    <div class="tuning-section">
+      <div class="section-title">FAHRMODE</div>
+      <div class="mode-grid">
+        <button class="mode-btn active" id="modeEco" onclick="setMode('eco')">
+          <span class="mode-icon">🌿</span>ECO
+        </button>
+        <button class="mode-btn" id="modeDrive" onclick="setMode('drive')">
+          <span class="mode-icon">⚡</span>DRIVE
+        </button>
+        <button class="mode-btn" id="modeSport" onclick="setMode('sport')">
+          <span class="mode-icon">🚀</span>SPORT
+        </button>
+        <button class="mode-btn" id="modePolice" onclick="setMode('police')">
+          <span class="mode-icon">🚨</span>POLICE
+        </button>
+      </div>
+
+      <div class="speed-slider-wrap">
+        <div class="slider-header">
+          <div class="slider-label">SPEED LIMIT</div>
+          <div><span class="slider-val" id="sliderVal">20</span><span style="color:var(--dim);font-family:'Share Tech Mono';font-size:14px"> km/h</span></div>
+        </div>
+        <input type="range" id="speedSlider" min="6" max="35" value="20"
+          oninput="updateSlider(this.value)" onchange="updateSlider(this.value)">
+        <div class="speed-presets">
+          <button class="preset-btn" onclick="setPreset(10)">10</button>
+          <button class="preset-btn" onclick="setPreset(15)">15</button>
+          <button class="preset-btn active" onclick="setPreset(20)">20</button>
+          <button class="preset-btn" onclick="setPreset(25)">25</button>
+          <button class="preset-btn" onclick="setPreset(30)">30</button>
+          <button class="preset-btn" onclick="setPreset(35)">35</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="apply-wrap">
+      <button class="btn btn-warn" onclick="applySettings()">⚡ SPEED LIMIT SENDEN</button>
+      <button class="btn btn-sm btn-danger" style="width:auto;padding:14px 16px" onclick="resetToDefault()">↺</button>
+    </div>
+
+    <div class="zero-start-wrap">
+      <div class="section-title">ZERO START</div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Anfahrhilfe deaktivieren</div>
+          <div class="toggle-desc">Scooter startet ohne Abstoßen</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="zeroStartToggle" onchange="toggleZeroStart(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div style="height:14px"></div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Licht dauerhaft an</div>
+          <div class="toggle-desc">Frontlicht immer aktiv</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="lightToggle" onchange="toggleLight(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div style="height:14px"></div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Bremslicht aktiv</div>
+          <div class="toggle-desc">Rücklicht beim Bremsen</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="brakeToggle" onchange="toggleBrake(this.checked)" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="raw-cmd">
+      <div class="section-title">RAW BEFEHL SENDEN</div>
+      <div class="cmd-row">
+        <input type="text" class="cmd-input" id="rawCmd" placeholder="z.B. 55aa..." maxlength="100">
+        <button class="btn btn-sm btn-primary" onclick="sendRawCmd()" style="white-space:nowrap">SEND</button>
+      </div>
+      <div style="font-family:'Share Tech Mono';font-size:10px;color:var(--dim)">
+        HEX-Bytes direkt an Scooter senden. Für Fortgeschrittene.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" id="tab-connect" onclick="showPage('connect')">
+    <span class="tab-icon">📡</span>CONNECT
+  </div>
+  <div class="tab" id="tab-live" onclick="showPage('live')">
+    <span class="tab-icon">📊</span>LIVE
+  </div>
+  <div class="tab" id="tab-tune" onclick="showPage('tune')">
+    <span class="tab-icon">⚙️</span>TUNING
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// NINEBOT E3 BLE PROTOKOLL
+// Service UUID & Characteristic UUIDs (Ninebot BLE Protokoll)
+// ============================================================
+
+const NINEBOT_SERVICE     = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const NINEBOT_TX_CHAR     = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // Write (App → Scooter)
+const NINEBOT_RX_CHAR     = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // Notify (Scooter → App)
+
+// Ninebot Protokoll Konstanten
+const HEADER = [0x55, 0xAA];
+
+// Bekannte Register (E-Serie)
+const REG = {
+  SPEED_LIMIT:    0x01, // Geschwindigkeitslimit
+  SPEED:          0xB5, // Aktuelle Geschwindigkeit
+  VOLTAGE:        0xB0, // Spannung
+  CURRENT:        0xB2, // Strom
+  TEMPERATURE:    0xB3, // Temperatur
+  BATTERY:        0x22, // Akkustand
+  ODOMETER:       0xB9, // Kilometerstand
+  ZERO_START:     0x68, // Anfahrhilfe
+  LIGHT:          0x7C, // Licht
+  MODE:           0x1A, // Fahrmode
+  ERROR_CODE:     0x26, // Fehlercode
+  SPORT_MODE:     0x1D, // Sport Modus
+};
+
+// App State
+const state = {
+  device: null,
+  server: null,
+  txChar: null,
+  rxChar: null,
+  connected: false,
+  speed: 0,
+  maxSpeed: 20,
+  currentMode: 'eco',
+  battery: 100,
+  voltage: 36.0,
+  current: 0,
+  power: 0,
+  temp: 25,
+  odo: 0,
+  errorCode: 0,
+  polling: null,
+  simulMode: false, // Demo-Modus wenn kein BLE
+};
+
+// ============================================================
+// BLE CHECK
+// ============================================================
+window.addEventListener('load', () => {
+  if (!navigator.bluetooth) {
+    document.getElementById('bleWarnBanner').style.display = 'block';
+    addLog('⚠ Web Bluetooth nicht verfügbar', 'warn');
+    addLog('Nutze Chrome für Android!', 'warn');
+    document.getElementById('connectBtn').disabled = false;
+    document.getElementById('connectBtn').textContent = '🎮 DEMO MODUS STARTEN';
+    document.getElementById('connectBtn').onclick = startDemoMode;
+  } else {
+    addLog('✓ Web Bluetooth verfügbar', 'ok');
+    addLog('Bereit. Verbinde deinen Ninebot E3.', 'info');
+  }
+  updateSlider(20);
+});
+
+// ============================================================
+// NINEBOT PROTOKOLL BUILDER
+// ============================================================
+
+// Checksum berechnen (Ninebot XOR Protokoll)
+function calcChecksum(data) {
+  let cs = 0;
+  for (let b of data) cs ^= b;
+  return cs;
+}
+
+// Ninebot Befehlspaket bauen
+function buildPacket(cmd, register, payload = []) {
+  // Format: 55 AA [len] [dst] [src] [cmd] [reg] [data...] [checksum]
+  const body = [0x20, 0x01, cmd, register, ...payload];
+  const len = body.length;
+  const packet = [...HEADER, len, ...body];
+  packet.push(calcChecksum(body));
+  return new Uint8Array(packet);
+}
+
+// Lese-Befehl: 0x01 = read
+function buildReadCmd(register, length = 2) {
+  return buildPacket(0x01, register, [length]);
+}
+
+// Schreib-Befehl: 0x03 = write
+function buildWriteCmd(register, value16) {
+  const lo = value16 & 0xFF;
+  const hi = (value16 >> 8) & 0xFF;
+  return buildPacket(0x03, register, [lo, hi]);
+}
+
+// ============================================================
+// VERBINDUNG
+// ============================================================
+async function connectScooter() {
+  if (!navigator.bluetooth) {
+    startDemoMode();
+    return;
+  }
+
+  const btn = document.getElementById('connectBtn');
+  const ring = document.getElementById('scanningRing');
+  btn.disabled = true;
+  btn.textContent = '🔍 SUCHE...';
+  ring.classList.add('active');
+  setBtStatus('SUCHE', 'scanning');
+  addLog('Bluetooth Scan gestartet...', 'info');
+
+  try {
+    state.device = await navigator.bluetooth.requestDevice({
+      filters: [
+        { namePrefix: 'E3' },
+        { namePrefix: 'KickScooter' },
+        { namePrefix: 'Ninebot' },
+        { namePrefix: 'Mi' },
+      ],
+      optionalServices: [NINEBOT_SERVICE]
+    });
+
+    addLog(`Gerät gefunden: ${state.device.name}`, 'ok');
+    setBtStatus('VERBINDE', 'scanning');
+
+    state.device.addEventListener('gattserverdisconnected', onDisconnected);
+
+    state.server = await state.device.gatt.connect();
+    addLog('GATT verbunden', 'ok');
+
+    const service = await state.server.getPrimaryService(NINEBOT_SERVICE);
+    addLog('Ninebot Service gefunden', 'ok');
+
+    state.txChar = await service.getCharacteristic(NINEBOT_TX_CHAR);
+    state.rxChar = await service.getCharacteristic(NINEBOT_RX_CHAR);
+    addLog('Charakteristiken bereit', 'ok');
+
+    // Notifications aktivieren
+    await state.rxChar.startNotifications();
+    state.rxChar.addEventListener('characteristicvaluechanged', handleNotification);
+    addLog('Notifications aktiviert', 'ok');
+
+    onConnected();
+
+  } catch (err) {
+    ring.classList.remove('active');
+    btn.disabled = false;
+    btn.textContent = '⚡ MIT E3 VERBINDEN';
+    setBtStatus('OFFLINE', '');
+
+    if (err.name === 'NotFoundError') {
+      addLog('Kein Gerät ausgewählt', 'warn');
+      showToast('Kein Gerät ausgewählt', 'warn');
+    } else if (err.name === 'NotSupportedError') {
+      addLog('GATT Service nicht gefunden', 'err');
+      addLog('Versuche Demo Modus...', 'warn');
+      showToast('Service nicht gefunden – Demo Modus', 'warn');
+      setTimeout(startDemoMode, 500);
+    } else {
+      addLog(`Fehler: ${err.message}`, 'err');
+      showToast('Verbindung fehlgeschlagen', 'err');
+    }
+  }
+}
+
+function onConnected() {
+  state.connected = true;
+  state.simulMode = false;
+
+  document.getElementById('scanningRing').classList.remove('active');
+  document.getElementById('connectBtn').style.display = 'none';
+  document.getElementById('disconnectBtn').style.display = 'block';
+
+  const info = document.getElementById('deviceInfo');
+  info.classList.add('visible');
+  document.getElementById('devName').textContent = state.device.name || 'Ninebot E3';
+  document.getElementById('devId').textContent = state.device.id ? state.device.id.slice(0,12)+'...' : '---';
+  document.getElementById('devFw').textContent = '4.5.2';
+
+  setBtStatus('ONLINE', 'connected');
+  addLog('✓ Verbindung erfolgreich!', 'ok');
+  showToast('E3 verbunden!', 'ok');
+
+  // Polling starten
+  startPolling();
+}
+
+function onDisconnected() {
+  state.connected = false;
+  clearInterval(state.polling);
+  setBtStatus('OFFLINE', '');
+  document.getElementById('connectBtn').style.display = 'block';
+  document.getElementById('connectBtn').disabled = false;
+  document.getElementById('connectBtn').textContent = '⚡ MIT E3 VERBINDEN';
+  document.getElementById('disconnectBtn').style.display = 'none';
+  document.getElementById('deviceInfo').classList.remove('visible');
+  addLog('Verbindung getrennt', 'warn');
+  showToast('Getrennt', 'warn');
+}
+
+function disconnectScooter() {
+  if (state.device && state.device.gatt.connected) {
+    state.device.gatt.disconnect();
+  }
+  if (state.simulMode) {
+    clearInterval(state.polling);
+    state.simulMode = false;
+    onDisconnected();
+  }
+}
+
+// ============================================================
+// DATEN EMPFANGEN (Notification Handler)
+// ============================================================
+function handleNotification(event) {
+  const data = new Uint8Array(event.target.value.buffer);
+  parseResponse(data);
+}
+
+function parseResponse(data) {
+  if (data.length < 6) return;
+  if (data[0] !== 0x55 || data[1] !== 0xAA) return;
+
+  const cmd = data[5];
+  const reg = data[6];
+  const payload = data.slice(7, data.length - 1);
+
+  switch (reg) {
+    case REG.SPEED:
+      state.speed = ((payload[1] << 8) | payload[0]) / 100;
+      break;
+    case REG.VOLTAGE:
+      state.voltage = ((payload[1] << 8) | payload[0]) / 100;
+      break;
+    case REG.CURRENT:
+      state.current = ((payload[1] << 8) | payload[0]) / 100;
+      state.power = Math.abs(state.voltage * state.current);
+      break;
+    case REG.TEMPERATURE:
+      state.temp = (payload[1] << 8) | payload[0];
+      break;
+    case REG.BATTERY:
+      state.battery = payload[0];
+      break;
+    case REG.ODOMETER:
+      state.odo = ((payload[3] << 24) | (payload[2] << 16) | (payload[1] << 8) | payload[0]) / 1000;
+      break;
+    case REG.ERROR_CODE:
+      state.errorCode = (payload[1] << 8) | payload[0];
+      break;
+  }
+  updateLiveDisplay();
+}
+
+// ============================================================
+// POLLING (Live-Daten anfordern)
+// ============================================================
+function startPolling() {
+  if (state.simulMode) {
+    startSimulation();
+    return;
+  }
+
+  const registers = [REG.SPEED, REG.VOLTAGE, REG.CURRENT, REG.TEMPERATURE, REG.BATTERY, REG.ODOMETER];
+  let i = 0;
+
+  state.polling = setInterval(async () => {
+    if (!state.connected || !state.txChar) return;
+    try {
+      const reg = registers[i % registers.length];
+      await state.txChar.writeValue(buildReadCmd(reg, 2));
+      i++;
+    } catch(e) { /* ignore */ }
+  }, 300);
+}
+
+// ============================================================
+// BEFEHL SENDEN
+// ============================================================
+async function sendCommand(data) {
+  if (state.simulMode) {
+    addLog(`[SIM] Befehl: ${Array.from(data).map(b=>b.toString(16).padStart(2,'0')).join(' ')}`, 'info');
+    simulateResponse(data);
+    return true;
+  }
+  if (!state.connected || !state.txChar) {
+    showToast('Nicht verbunden!', 'err');
+    return false;
+  }
+  try {
+    await state.txChar.writeValue(data);
+    return true;
+  } catch(e) {
+    addLog(`Sendefehler: ${e.message}`, 'err');
+    return false;
+  }
+}
+
+// ============================================================
+// TUNING FUNKTIONEN
+// ============================================================
+async function applySettings() {
+  const speedKmh = parseInt(document.getElementById('speedSlider').value);
+  const speedVal = speedKmh * 100; // Ninebot speichert in cm/s * 10
+
+  addLog(`Setze Speed Limit: ${speedKmh} km/h`, 'info');
+  const pkt = buildWriteCmd(REG.SPEED_LIMIT, speedVal);
+  const ok = await sendCommand(pkt);
+
+  if (ok) {
+    state.maxSpeed = speedKmh;
+    document.getElementById('speedMaxLabel').textContent = `MAX: ${speedKmh} KM/H`;
+    addLog(`✓ Speed Limit gesetzt: ${speedKmh} km/h`, 'ok');
+    showToast(`Limit: ${speedKmh} km/h gesetzt!`, 'ok');
+
+    // Ring aktualisieren
+    updateSpeedRing(state.speed, speedKmh);
+  }
+}
+
+async function toggleZeroStart(enabled) {
+  const val = enabled ? 0x0001 : 0x0000;
+  addLog(`Zero Start: ${enabled ? 'AN' : 'AUS'}`, 'info');
+  const pkt = buildWriteCmd(REG.ZERO_START, val);
+  await sendCommand(pkt);
+  showToast(`Zero Start ${enabled ? 'aktiviert' : 'deaktiviert'}`, enabled ? 'ok' : 'warn');
+}
+
+async function toggleLight(enabled) {
+  const val = enabled ? 0x0001 : 0x0000;
+  const pkt = buildWriteCmd(REG.LIGHT, val);
+  await sendCommand(pkt);
+  showToast(`Licht ${enabled ? 'an' : 'aus'}`, 'info');
+  addLog(`Licht: ${enabled ? 'AN' : 'AUS'}`, 'info');
+}
+
+async function toggleBrake(enabled) {
+  showToast(`Bremslicht ${enabled ? 'aktiv' : 'inaktiv'}`, 'info');
+}
+
+async function setMode(mode) {
+  state.currentMode = mode;
+
+  // Mode buttons aktualisieren
+  ['eco','drive','sport','police'].forEach(m => {
+    const btn = document.getElementById('mode' + m.charAt(0).toUpperCase() + m.slice(1));
+    btn.classList.remove('active','police');
+  });
+
+  const activeBtn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+  activeBtn.classList.add('active');
+  if (mode === 'police') activeBtn.classList.add('police');
+
+  let modeVal = 0;
+  let speedLimit = 20;
+
+  switch(mode) {
+    case 'eco':
+      modeVal = 0x0000; speedLimit = 15;
+      addLog('Eco Modus aktiviert (15 km/h)', 'ok');
+      break;
+    case 'drive':
+      modeVal = 0x0001; speedLimit = 20;
+      addLog('Drive Modus aktiviert (20 km/h)', 'ok');
+      break;
+    case 'sport':
+      modeVal = 0x0002; speedLimit = 25;
+      addLog('Sport Modus aktiviert (25 km/h)', 'ok');
+      break;
+    case 'police':
+      modeVal = 0x0002; speedLimit = 35;
+      addLog('⚠ POLICE Modus! Max Speed (35 km/h)', 'warn');
+      addLog('⚠ NUR AUF PRIVATGELÄNDE!', 'warn');
+      showToast('⚠ POLICE MODE – Privatgelände!', 'warn');
+      break;
+  }
+
+  // Slider anpassen
+  document.getElementById('speedSlider').value = speedLimit;
+  updateSlider(speedLimit);
+
+  // Senden
+  const pkt = buildWriteCmd(REG.MODE, modeVal);
+  await sendCommand(pkt);
+
+  // Speed limit auch senden
+  const pkt2 = buildWriteCmd(REG.SPEED_LIMIT, speedLimit * 100);
+  await sendCommand(pkt2);
+
+  state.maxSpeed = speedLimit;
+  document.getElementById('speedMaxLabel').textContent = `MAX: ${speedLimit} KM/H`;
+  showToast(`${mode.toUpperCase()} Modus aktiviert`, 'ok');
+}
+
+async function resetToDefault() {
+  addLog('Setze auf Werkseinstellungen...', 'warn');
+  document.getElementById('speedSlider').value = 20;
+  updateSlider(20);
+  await setMode('drive');
+  document.getElementById('zeroStartToggle').checked = false;
+  document.getElementById('lightToggle').checked = false;
+  document.getElementById('brakeToggle').checked = true;
+  showToast('Werkseinstellungen wiederhergestellt', 'ok');
+}
+
+async function sendRawCmd() {
+  const hexStr = document.getElementById('rawCmd').value.replace(/\s/g,'');
+  if (!hexStr) return;
+
+  const bytes = [];
+  for (let i = 0; i < hexStr.length; i += 2) {
+    bytes.push(parseInt(hexStr.substr(i, 2), 16));
+  }
+
+  addLog(`Sende RAW: ${hexStr}`, 'info');
+  await sendCommand(new Uint8Array(bytes));
+  document.getElementById('rawCmd').value = '';
+}
+
+// ============================================================
+// SLIDER & PRESETS
+// ============================================================
+function updateSlider(val) {
+  const slider = document.getElementById('speedSlider');
+  slider.value = val;
+  document.getElementById('sliderVal').textContent = val;
+
+  const min = parseInt(slider.min);
+  const max = parseInt(slider.max);
+  const pct = ((val - min) / (max - min) * 100).toFixed(1);
+  slider.style.setProperty('--pct', pct + '%');
+
+  // Active preset
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.textContent) == val);
+  });
+}
+
+function setPreset(val) {
+  updateSlider(val);
+}
+
+// ============================================================
+// LIVE DISPLAY UPDATE
+// ============================================================
+function updateLiveDisplay() {
+  document.getElementById('speedVal').textContent = state.speed.toFixed(0);
+  document.getElementById('wattVal').innerHTML = Math.round(state.power) + '<span class="metric-unit">W</span>';
+  document.getElementById('voltVal').innerHTML = state.voltage.toFixed(1) + '<span class="metric-unit">V</span>';
+  document.getElementById('ampVal').innerHTML = Math.abs(state.current).toFixed(1) + '<span class="metric-unit">A</span>';
+  document.getElementById('tempVal').innerHTML = Math.round(state.temp) + '<span class="metric-unit">°C</span>';
+  document.getElementById('battVal').innerHTML = Math.round(state.battery) + '<span class="metric-unit">%</span>';
+  document.getElementById('odoVal').innerHTML = state.odo.toFixed(1) + '<span class="metric-unit" style="font-size:11px">km</span>';
+  document.getElementById('batteryDisplay').textContent = `🔋 ${Math.round(state.battery)}%`;
+
+  // Bars
+  document.getElementById('wattBar').style.width = Math.min(100, state.power / 2.5) + '%';
+  document.getElementById('ampBar').style.width = Math.min(100, Math.abs(state.current) / 15 * 100) + '%';
+  document.getElementById('voltBar').style.width = Math.min(100, (state.voltage / 42) * 100) + '%';
+
+  const tempPct = Math.min(100, (state.temp / 80) * 100);
+  document.getElementById('tempBar').style.width = tempPct + '%';
+  const tempBar = document.getElementById('tempBar');
+  if (state.temp > 60) tempBar.style.background = 'var(--danger)';
+  else if (state.temp > 45) tempBar.style.background = 'var(--warn)';
+  else tempBar.style.background = 'var(--accent3)';
+
+  const battBar = document.getElementById('battBar');
+  if (state.battery < 20) battBar.style.background = 'var(--danger)';
+  else if (state.battery < 40) battBar.style.background = 'var(--warn)';
+  else battBar.style.background = 'var(--accent3)';
+
+  document.getElementById('errVal').textContent = state.errorCode === 0 ? 'NONE' : `E${state.errorCode}`;
+  document.getElementById('errVal').style.color = state.errorCode === 0 ? 'var(--accent3)' : 'var(--danger)';
+
+  // Speed ring
+  updateSpeedRing(state.speed, state.maxSpeed);
+}
+
+function updateSpeedRing(speed, maxSpeed) {
+  const circumference = 2 * Math.PI * 70;
+  const fraction = Math.min(1, speed / maxSpeed);
+  const offset = circumference - (fraction * circumference * 0.75);
+
+  const fill = document.getElementById('speedFill');
+  fill.style.strokeDasharray = circumference;
+  fill.style.strokeDashoffset = offset;
+
+  if (speed > maxSpeed * 0.9) fill.style.stroke = 'var(--danger)';
+  else if (speed > maxSpeed * 0.7) fill.style.stroke = 'var(--warn)';
+  else fill.style.stroke = 'var(--accent)';
+}
+
+// ============================================================
+// DEMO / SIMULATION MODUS
+// ============================================================
+function startDemoMode() {
+  state.simulMode = true;
+  state.connected = true;
+
+  document.getElementById('scanningRing').classList.remove('active');
+  document.getElementById('connectBtn').style.display = 'none';
+  document.getElementById('disconnectBtn').style.display = 'block';
+
+  const info = document.getElementById('deviceInfo');
+  info.classList.add('visible');
+  document.getElementById('devName').textContent = 'Ninebot E3 [DEMO]';
+  document.getElementById('devId').textContent = 'DEMO:00:11:22:33';
+  document.getElementById('devFw').textContent = '4.5.2';
+  document.getElementById('devStatus').textContent = 'DEMO MODUS';
+  document.getElementById('devStatus').style.color = 'var(--warn)';
+
+  setBtStatus('DEMO', 'connected');
+  addLog('🎮 Demo Modus gestartet', 'warn');
+  addLog('Simulierte Daten werden angezeigt', 'warn');
+  showToast('Demo Modus – kein echter Scooter', 'warn');
+
+  startSimulation();
+}
+
+function simulateResponse(data) {
+  // Simulierte Antworten bei bestimmten Befehlen
+  if (data[5] === 0x03) { // Write command
+    addLog(`✓ Befehl bestätigt (simuliert)`, 'ok');
+  }
+}
+
+function startSimulation() {
+  let t = 0;
+  state.polling = setInterval(() => {
+    t += 0.05;
+
+    // Simulierte Fahrt
+    state.speed = Math.max(0, Math.min(state.maxSpeed,
+      state.maxSpeed * 0.6 * Math.abs(Math.sin(t * 0.3)) + Math.random() * 2));
+    state.voltage = 36.5 - (t * 0.001);
+    state.current = state.speed > 2 ? (state.speed / state.maxSpeed) * 12 + Math.random() * 2 : 0;
+    state.power = state.voltage * state.current;
+    state.temp = 25 + (state.speed / state.maxSpeed) * 35 + Math.random() * 2;
+    state.battery = Math.max(0, 100 - t * 0.1);
+    state.odo += state.speed / 3600 * 0.05;
+
+    if (state.battery < 0.5) state.battery = 100;
+
+    document.getElementById('batteryDisplay').textContent = `🔋 ${Math.round(state.battery)}%`;
+    updateLiveDisplay();
+  }, 100);
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function setBtStatus(text, type) {
+  const dot = document.getElementById('btDot');
+  const label = document.getElementById('btStatus');
+  dot.className = 'dot' + (type ? ' ' + type : '');
+  label.textContent = text;
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function addLog(msg, type='') {
+  const box = document.getElementById('logBox');
+  const now = new Date();
+  const ts = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+  const el = document.createElement('div');
+  el.className = 'log-entry' + (type ? ' ' + type : '');
+  el.textContent = `[${ts}] ${msg}`;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+
+  // Max 50 Einträge
+  while (box.children.length > 50) box.removeChild(box.firstChild);
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
